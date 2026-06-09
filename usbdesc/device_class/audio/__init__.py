@@ -1,0 +1,1 @@
+"""USB Audio Device Class descriptors — UAC 1.0 and UAC 2.0 (including MIDI Streaming)."""

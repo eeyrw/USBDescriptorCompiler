@@ -1,0 +1,599 @@
+USB AUDIO 2.0 — COMPLETE DESCRIPTOR TABLE CATALOG
+
+Source: "Audio 2.0 Device Class Spec.pdf" Release 2.0, April 2025
+        Plus "Frmts20 final.pdf" for Format Type descriptors
+
+NOTE: Per page 18 of the UAC2 spec: "All MIDI-related information is grouped in
+a separate document, Universal Serial Bus Device Class Definition for MIDI
+Devices." Therefore, MIDI IN/OUT Jack descriptors and MIDI Bulk Endpoint
+descriptors are NOT included in this extraction.
+
+================================================================================
+SEMANTIC CONVENTIONS (applied throughout):
+  - bmControls / bmaControls: 2-bit pairs per Control
+      0b00 = Control absent
+      0b01 = Control present, read-only
+      0b10 = NOT ALLOWED (reserved)
+      0b11 = Control present, Host programmable (read/write)
+  - All "Reserved" bits must be set to 0
+
+================================================================================
+
+============================================================
+TABLE 4-1: Audio Channel Cluster Descriptor
+============================================================
+bLength: [embedded — not a standalone descriptor, part of ITD, MUD, PUD, XUD, AS_IF]
+Offset  Size  Field              Value    Description
+0       1     bNrChannels         Number   Number of logical output channels in the cluster
+1       4     bmChannelConfig     Bitmap   Spatial location of logical channels:
+    D0:   Front Left (FL)
+    D1:   Front Right (FR)
+    D2:   Front Center (FC)
+    D3:   Low Frequency Effects (LFE)
+    D4:   Back Left (BL)
+    D5:   Back Right (BR)
+    D6:   Front Left of Center (FLC)
+    D7:   Front Right of Center (FRC)
+    D8:   Back Center (BC)
+    D9:   Side Left (SL)
+    D10:  Side Right (SR)
+    D11:  Top Center (TC)
+    D12:  Top Front Left (TFL)
+    D13:  Top Front Center (TFC)
+    D14:  Top Front Right (TFR)
+    D15:  Top Back Left (TBL)
+    D16:  Top Back Center (TBC)
+    D17:  Top Back Right (TBR)
+    D18:  Top Front Left of Center (TFLC)
+    D19:  Top Front Right of Center (TFRC)
+    D20:  Left Low Frequency Effects (LLFE)
+    D21:  Right Low Frequency Effects (RLFE)
+    D22:  Top Side Left (TSL)
+    D23:  Top Side Right (TSR)
+    D24:  Bottom Center (BC)
+    D25:  Back Left of Center (BLC)
+    D26:  Back Right of Center (BRC)
+    D27..D30: Reserved
+    D31:  Raw Data (RD) — mutually exclusive with all other spatial locations
+5       1     iChannelNames       Index     Index of first non-predefined channel's string descriptor
+
+============================================================
+TABLE 4-3: Standard Interface Association Descriptor
+============================================================
+bLength: 8
+Offset  Size  Field              Value    Description
+0       1     bLength             Number   Size of this descriptor, in bytes: 8
+1       1     bDescriptorType     Constant INTERFACE ASSOCIATION descriptor type
+2       1     bFirstInterface     Number   Interface number of the first associated interface
+3       1     bInterfaceCount     Number   Number of contiguous interfaces in this function
+4       1     bFunctionClass      Class    AUDIO_FUNCTION
+5       1     bFunctionSubClass   SubClass FUNCTION_SUBCLASS_UNDEFINED
+6       1     bFunctionProtocol   Protocol AF_VERSION_02_00
+7       1     iFunction           Index    Index of string descriptor
+
+============================================================
+TABLE 4-4: Standard AC Interface Descriptor
+============================================================
+bLength: 9
+Offset  Size  Field              Value    Description
+0       1     bLength             Number   Size of this descriptor, in bytes: 9
+1       1     bDescriptorType     Constant INTERFACE descriptor type
+2       1     bInterfaceNumber    Number   Zero-based interface index
+3       1     bAlternateSetting   Number   Must be set to 0
+4       1     bNumEndpoints       Number   0 or 1 (if optional interrupt endpoint present)
+5       1     bInterfaceClass     Class    AUDIO
+6       1     bInterfaceSubClass  Subclass AUDIOCONTROL
+7       1     bInterfaceProtocol  Protocol IP_VERSION_02_00
+8       1     iInterface          Index    Index of string descriptor
+
+============================================================
+TABLE 4-5: Class-Specific AC Interface Header Descriptor
+============================================================
+bLength: 9
+Offset  Size  Field              Value    Description
+0       1     bLength             Number   Size of this descriptor, in bytes: 9
+1       1     bDescriptorType     Constant CS_INTERFACE descriptor type
+2       1     bDescriptorSubtype  Constant HEADER descriptor subtype
+3       2     bcdADC              BCD      Audio Device Class Spec release number in BCD
+5       1     bCategory           Constant Primary use of audio function
+6       2     wTotalLength        Number   Total bytes of class-specific AC interface descriptor
+8       1     bmControls          Bitmap   D1..0: Latency Control; D7..2: Reserved
+
+============================================================
+TABLE 4-6: Clock Source Descriptor
+============================================================
+bLength: 8
+Offset  Size  Field              Value    Description
+0       1     bLength             Number   Size of this descriptor, in bytes: 8
+1       1     bDescriptorType     Constant CS_INTERFACE descriptor type
+2       1     bDescriptorSubtype  Constant CLOCK_SOURCE descriptor subtype
+3       1     bClockID            Constant Unique Clock Entity ID
+4       1     bmAttributes        Bitmap   D1..0: Clock Type (00=External,01=InternalFixed,10=InternalVar,11=InternalProg)
+                                           D2: Clock sync'd to SOF; D7..3: Reserved
+5       1     bmControls          Bitmap   D1..0: Clock Frequency Ctrl; D3..2: Clock Validity Ctrl; D7..4: Reserved
+6       1     bAssocTerminal      Constant Terminal ID associated with this Clock Source
+7       1     iClockSource        Index    Index of string descriptor
+
+============================================================
+TABLE 4-7: Clock Selector Descriptor
+============================================================
+bLength: 7+p
+Offset  Size  Field              Value    Description
+0       1     bLength             Number   Size of this descriptor, in bytes: 7+p
+1       1     bDescriptorType     Constant CS_INTERFACE descriptor type
+2       1     bDescriptorSubtype  Constant CLOCK_SELECTOR descriptor subtype
+3       1     bClockID            Constant Unique Clock Entity ID
+4       1     bNrInPins           Number   Number of Input Pins: p
+5       1     baCSourceID(1)      Number   Clock Entity ID connected to input pin 1
+...
+5+(p-1) 1     baCSourceID(p)      Number   Clock Entity ID connected to input pin p
+5+p     1     bmControls          Bitmap   D1..0: Clock Selector Control; D7..2: Reserved
+6+p     1     iClockSelector      Index    Index of string descriptor
+
+============================================================
+TABLE 4-8: Clock Multiplier Descriptor
+============================================================
+bLength: 7
+Offset  Size  Field              Value    Description
+0       1     bLength             Number   Size of this descriptor, in bytes: 7
+1       1     bDescriptorType     Constant CS_INTERFACE descriptor type
+2       1     bDescriptorSubtype  Constant CLOCK_MULTIPLIER descriptor subtype
+3       1     bClockID            Constant Unique Clock Entity ID
+4       1     bCSourceID          Number   Clock Entity ID connected to the input pin
+5       1     bmControls          Bitmap   D1..0: Clock Numerator Ctrl; D3..2: Clock Denominator Ctrl; D7..4: Reserved
+6       1     iClockMultiplier    Index    Index of string descriptor
+
+============================================================
+TABLE 4-9: Input Terminal Descriptor (ITD)
+============================================================
+bLength: 17
+Offset  Size  Field              Value    Description
+0       1     bLength             Number   Size of this descriptor, in bytes: 17
+1       1     bDescriptorType     Constant CS_INTERFACE descriptor type
+2       1     bDescriptorSubtype  Constant INPUT_TERMINAL descriptor subtype
+3       1     bTerminalID         Constant Unique Terminal ID
+4       2     wTerminalType       Constant Terminal type
+6       1     bAssocTerminal      Constant ID of associated Output Terminal (0 if none)
+7       1     bCSourceID          Constant Clock Entity ID connected to this Terminal
+8       1     bNrChannels         Number   Number of logical output channels
+9       4     bmChannelConfig     Bitmap   Spatial location of logical channels
+13      1     iChannelNames       Index    Index of first non-predefined channel's string descriptor
+14      2     bmControls          Bitmap   D1..0: Copy Protect; D3..2: Connector; D5..4: Overload;
+                                           D7..6: Cluster; D9..8: Underflow; D11..10: Overflow;
+                                           D13..12: Phantom Power; D15..14: Reserved
+16      1     iTerminal           Index    Index of string descriptor
+
+============================================================
+TABLE 4-10: Output Terminal Descriptor (OTD)
+============================================================
+bLength: 12
+Offset  Size  Field              Value    Description
+0       1     bLength             Number   Size of this descriptor, in bytes: 12
+1       1     bDescriptorType     Constant CS_INTERFACE descriptor type
+2       1     bDescriptorSubtype  Constant OUTPUT_TERMINAL descriptor subtype
+3       1     bTerminalID         Constant Unique Terminal ID
+4       2     wTerminalType       Constant Terminal type
+6       1     bAssocTerminal      Constant ID of associated Input Terminal (0 if none)
+7       1     bSourceID           Constant ID of Unit/Terminal connected to this Output Terminal
+8       1     bCSourceID          Constant Clock Entity ID connected to this Terminal
+9       2     bmControls          Bitmap   D1..0: Copy Protect; D3..2: Connector; D5..4: Overload;
+                                           D7..6: Underflow; D9..8: Overflow; D15..10: Reserved
+11      1     iTerminal           Index    Index of string descriptor
+
+============================================================
+TABLE 4-11: Mixer Unit Descriptor (MUD)
+============================================================
+bLength: 13+p+N  (p=#input pins, N=ceil(n*m/8), n=total input chans, m=output chans)
+Offset  Size  Field              Value    Description
+0       1     bLength             Number   Size of this descriptor, in bytes: 13+p+N
+1       1     bDescriptorType     Constant CS_INTERFACE descriptor type
+2       1     bDescriptorSubtype  Constant MIXER_UNIT descriptor subtype
+3       1     bUnitID             Number   Unique Unit ID
+4       1     bNrInPins           Number   Number of Input Pins: p
+5       1     baSourceID(1)       Number   ID of Unit/Terminal connected to input pin 1
+...
+5+(p-1) 1     baSourceID(p)       Number   ID of Unit/Terminal connected to input pin p
+5+p     1     bNrChannels         Number   Number of logical output channels (m)
+6+p     4     bmChannelConfig     Bitmap   Spatial location of logical output channels
+10+p    1     iChannelNames       Index    Index of first non-predefined channel string desc
+11+p    N     bmMixerControls     Bitmap   n*m bit array (row-major, MSb=ch1→ch1); MCN=(u-1)*m+(v-1)
+11+p+N  1     bmControls          Bitmap   D1..0: Cluster; D3..2: Underflow; D5..4: Overflow; D7..6: Reserved
+12+p+N  1     iMixer              Index    Index of string descriptor
+
+============================================================
+TABLE 4-12: Selector Unit Descriptor (SUD)
+============================================================
+bLength: 7+p
+Offset  Size  Field              Value    Description
+0       1     bLength             Number   Size of this descriptor, in bytes: 7+p
+1       1     bDescriptorType     Constant CS_INTERFACE descriptor type
+2       1     bDescriptorSubtype  Constant SELECTOR_UNIT descriptor subtype
+3       1     bUnitID             Number   Unique Unit ID
+4       1     bNrInPins           Number   Number of Input Pins: p
+5       1     baSourceID(1)       Number   ID of Unit/Terminal connected to input pin 1
+...
+5+(p-1) 1     baSourceID(p)       Number   ID of Unit/Terminal connected to input pin p
+5+p     1     bmControls          Bitmap   D1..0: Selector Control; D7..2: Reserved
+6+p     1     iSelector           Index    Index of string descriptor
+
+============================================================
+TABLE 4-13: Feature Unit Descriptor (FUD)
+============================================================
+bLength: 6+(ch+1)*4
+Offset  Size  Field              Value    Description
+0       1     bLength             Number   Size of this descriptor, in bytes: 6+(ch+1)*4
+1       1     bDescriptorType     Constant CS_INTERFACE descriptor type
+2       1     bDescriptorSubtype  Constant FEATURE_UNIT descriptor subtype
+3       1     bUnitID             Number   Unique Unit ID
+4       1     bSourceID           Constant ID of the Unit/Terminal connected to this Feature Unit
+5       4     bmaControls(0)      Bitmap   Master channel 0 — D1..0: Mute; D3..2: Volume; D5..4: Bass;
+                                           D7..6: Mid; D9..8: Treble; D11..10: Graphic EQ;
+                                           D13..12: Auto Gain; D15..14: Delay; D17..16: Bass Boost;
+                                           D19..18: Loudness; D21..20: Input Gain;
+                                           D23..22: Input Gain Pad; D25..24: Phase Inverter;
+                                           D27..26: Underflow; D29..28: Overflow;
+                                           D31..30: High-Pass Filter
+5+1*4   4     bmaControls(1)      Bitmap   Controls bitmap for logical channel 1
+...
+5+ch*4  4     bmaControls(ch)     Bitmap   Controls bitmap for logical channel ch
+5+(ch+1)*4  1  iFeature           Index    Index of string descriptor
+
+============================================================
+TABLE 4-14: Sampling Rate Converter Unit Descriptor (RUD)
+============================================================
+bLength: 8
+Offset  Size  Field              Value    Description
+0       1     bLength             Number   Size of this descriptor, in bytes: 8
+1       1     bDescriptorType     Constant CS_INTERFACE descriptor type
+2       1     bDescriptorSubtype  Constant SAMPLE_RATE_CONVERTER descriptor subtype
+3       1     bUnitID             Constant Unique Unit ID
+4       1     bSourceID           Constant ID of Unit/Terminal connected to this SRC Unit
+5       1     bCSourceInID        Constant Clock Entity ID for SRC input section
+6       1     bCSourceOutID       Constant Clock Entity ID for SRC output section
+7       1     iSRC                Index    Index of string descriptor
+
+============================================================
+TABLE 4-15: Common Part of the Effect Unit Descriptor (EUD)
+============================================================
+bLength: 16+(ch*4)
+Offset  Size  Field              Value    Description
+0       1     bLength             Number   Size of this descriptor, in bytes: 16+(ch*4)
+1       1     bDescriptorType     Constant CS_INTERFACE descriptor type
+2       1     bDescriptorSubtype  Constant EFFECT_UNIT descriptor subtype
+3       1     bUnitID             Number   Unique Unit ID
+4       2     wEffectType         Constant Effect type constant
+6       1     bSourceID           Constant ID of Unit/Terminal connected to this Effect Unit
+7       4     bmaControls(0)      Bitmap   Controls bitmap for master channel 0
+11      4     bmaControls(1)      Bitmap   Controls bitmap for logical channel 1
+...
+11+(ch*4) 4   bmaControls(ch)     Bitmap   Controls bitmap for logical channel ch
+15+(ch*4) 1   iEffects            Index    Index of string descriptor
+
+============================================================
+TABLE 4-16: Parametric Equalizer Section Effect Unit Descriptor
+============================================================
+bLength: 16+(ch*4)
+wEffectType: PARAM_EQ_SECTION_EFFECT
+bmaControls(0) bits — D1..0: Enable; D3..2: Center Frequency; D5..4: Q Factor;
+    D7..6: Gain; D9..8: Underflow; D11..10: Overflow; D31..12: Reserved
+
+============================================================
+TABLE 4-17: Reverberation Effect Unit Descriptor
+============================================================
+bLength: 16+(ch*4)
+wEffectType: REVERBERATION_EFFECT
+bmaControls(0) bits — D1..0: Enable; D3..2: Type; D5..4: Level; D7..6: Time;
+    D9..8: Delay Feedback; D11..10: Pre-Delay; D13..12: Density;
+    D15..14: Hi-Freq Roll-Off; D17..16: Underflow; D19..18: Overflow; D31..20: Reserved
+
+============================================================
+TABLE 4-18: Modulation Delay Effect Unit Descriptor
+============================================================
+bLength: 16+(ch*4)
+wEffectType: MOD_DELAY_EFFECT
+bmaControls(0) bits — D1..0: Enable; D3..2: Balance; D5..4: Rate; D7..6: Depth;
+    D9..8: Time; D11..10: Feedback Level; D13..12: Underflow; D15..14: Overflow; D31..16: Reserved
+
+============================================================
+TABLE 4-19: Dynamic Range Compressor Effect Unit Descriptor
+============================================================
+bLength: 16+(ch*4)
+wEffectType: DYN_RANGE_COMP_EFFECT
+bmaControls(0) bits — D1..0: Enable; D3..2: Compression Ratio; D5..4: MaxAmpl;
+    D7..6: Threshold; D9..8: Attack Time; D11..10: Release Time;
+    D13..12: Underflow; D15..14: Overflow; D31..16: Reserved
+
+============================================================
+TABLE 4-20: Common Part of the Processing Unit Descriptor (PUD)
+============================================================
+bLength: 17+p+x
+Offset  Size  Field              Value    Description
+0       1     bLength             Number   Size of this descriptor, in bytes: 17+p+x
+1       1     bDescriptorType     Constant CS_INTERFACE descriptor type
+2       1     bDescriptorSubtype  Constant PROCESSING_UNIT descriptor subtype
+3       1     bUnitID             Number   Unique Unit ID
+4       2     wProcessType        Constant Processing type
+6       1     bNrInPins           Number   Number of Input Pins: p
+7       1     baSourceID(1)       Number   ID of Unit/Terminal connected to input pin 1
+...
+7+(p-1) 1     baSourceID(p)       Number   ID of Unit/Terminal connected to input pin p
+7+p     1     bNrChannels         Number   Number of logical output channels
+8+p     4     bmChannelConfig     Bitmap   Spatial location of logical output channels
+12+p    1     iChannelNames       Index    Index of first non-predefined channel string desc
+13+p    2     bmControls          Bitmap   D1..0: Enable; D15..2: Process-specific
+15+p    1     iProcessing         Index    Index of string descriptor
+16+p    x     Process-specific    NA       Process-specific descriptor appended
+
+============================================================
+TABLE 4-21: Up/Down-mix Processing Unit Descriptor
+============================================================
+bLength: 18+4*m
+Offset  Size  Field              Value    Description
+0       1     bLength             Number   Size of this descriptor, in bytes: 18+4*m
+1       1     bDescriptorType     Constant CS_INTERFACE descriptor type
+2       1     bDescriptorSubtype  Constant PROCESSING_UNIT descriptor subtype
+3       1     bUnitID             Number   Unique Unit ID
+4       2     wProcessType        Constant UP/DOWNMIX_PROCESS
+6       1     bNrInPins           Number   Number of Input Pins: 1
+7       1     bSourceID           Number   ID of Unit/Terminal connected to the Input Pin
+8       1     bNrChannels         Number   Number of logical output channels
+9       4     bmChannelConfig     Bitmap   Spatial location of logical output channels
+13      1     iChannelNames       Index    Index of first non-predefined channel string desc
+14      2     bmControls          Bitmap   D1..0: Enable; D3..2: Mode Select; D5..4: Cluster;
+                                           D7..6: Underflow; D9..8: Overflow; D15..10: Reserved
+16      1     iProcessing         Index    Index of string descriptor
+17      1     bNrModes            Number   Number of supported modes: m
+18      4     daModes(1)          Bitmap   Active logical channels in mode 1
+...
+18+4*(m-1) 4  daModes(m)          Bitmap   Active logical channels in mode m
+
+============================================================
+TABLE 4-22: Dolby Prologic Processing Unit Descriptor
+============================================================
+bLength: 18+4*m (max 3 modes)
+wProcessType: DOLBY_PROLOGIC_PROCESS
+Same layout as Up/Down-mix with DOLBY_PROLOGIC_PROCESS type.
+Known modes: 0x00000007 (L,R,C), 0x00000103 (L,R,S), 0x00000107 (L,R,C,S)
+
+============================================================
+TABLE 4-23: Stereo Extender Processing Unit Descriptor
+============================================================
+bLength: 17 (no process-specific part)
+wProcessType: STEREO_EXTENDER_PROCESS
+bmControls: D1..0: Enable; D3..2: Width; D5..4: Cluster; D7..6: Underflow; D9..8: Overflow; D15..10: Reserved
+
+============================================================
+TABLE 4-24: Extension Unit Descriptor (XUD)
+============================================================
+bLength: 16+p
+Offset  Size  Field              Value    Description
+0       1     bLength             Number   Size of this descriptor, in bytes: 16+p
+1       1     bDescriptorType     Constant CS_INTERFACE descriptor type
+2       1     bDescriptorSubtype  Constant EXTENSION_UNIT descriptor subtype
+3       1     bUnitID             Number   Unique Unit ID
+4       2     wExtensionCode      Constant Vendor-specific code (0 if not used)
+6       1     bNrInPins           Number   Number of Input Pins: p
+7       1     baSourceID(1)       Number   ID of Unit/Terminal connected to input pin 1
+...
+8+(p-1) 1     baSourceID(p)       Number   ID of Unit/Terminal connected to input pin p
+8+p     1     bNrChannels         Number   Number of logical output channels
+9+p     4     bmChannelConfig     Bitmap   Spatial location of logical output channels
+13+p    1     iChannelNames       Index    Index of first non-predefined channel string desc
+14+p    1     bmControls          Bitmap   D1..0: Enable (MANDATORY, default OFF);
+                                           D3..2: Cluster; D5..4: Underflow; D7..6: Overflow
+15+p    1     iExtension          Index    Index of string descriptor
+
+============================================================
+TABLE 4-25: Standard AC Interrupt Endpoint Descriptor
+============================================================
+bLength: 7
+Offset  Size  Field              Value    Description
+0       1     bLength             Number   Size of this descriptor, in bytes: 7
+1       1     bDescriptorType     Constant ENDPOINT descriptor type
+2       1     bEndpointAddress    Endpoint D7: Dir (1=IN); D6..4: Reserved; D3..0: Endpoint number
+3       1     bmAttributes        Bitmap   D1..0: Transfer Type (11=Interrupt); All other bits reserved
+4       2     wMaxPacketSize      Number   Max packet size (passes 6-byte interrupt info)
+6       1     bInterval           Number   Polling interval
+
+============================================================
+TABLE 4-26: Standard AS Interface Descriptor
+============================================================
+bLength: 9
+Offset  Size  Field              Value    Description
+0       1     bLength             Number   Size of this descriptor, in bytes: 9
+1       1     bDescriptorType     Constant INTERFACE descriptor type
+2       1     bInterfaceNumber    Number   Zero-based interface index
+3       1     bAlternateSetting   Number   Value to select Alternate Setting
+4       1     bNumEndpoints       Number   0, 1, or 2 (data + optional explicit feedback)
+5       1     bInterfaceClass     Class    AUDIO
+6       1     bInterfaceSubClass  Subclass AUDIO_STREAMING
+7       1     bInterfaceProtocol  Protocol IP_VERSION_02_00
+8       1     iInterface          Index    Index of string descriptor
+
+============================================================
+TABLE 4-27: Class-Specific AS Interface Descriptor (AS_GENERAL)
+============================================================
+bLength: 16
+Offset  Size  Field              Value    Description
+0       1     bLength             Number   Size of this descriptor, in bytes: 16
+1       1     bDescriptorType     Constant CS_INTERFACE descriptor type
+2       1     bDescriptorSubtype  Constant AS_GENERAL descriptor subtype
+3       1     bTerminalLink       Constant Terminal ID the AS interface is connected to
+4       1     bmControls          Bitmap   D1..0: Active Alt Setting; D3..2: Valid Alt Settings; D7..4: Reserved
+5       1     bFormatType         Constant Format Type
+6       4     bmFormats           Bitmap   Audio Data Format(s) supported on this interface
+10      1     bNrChannels         Number   Number of physical channels in AS channel cluster
+11      4     bmChannelConfig     Bitmap   Spatial location of physical channels
+15      1     iChannelNames       Index    Index of first physical channel string descriptor
+
+============================================================
+TABLE 2-2 (Frmts20): Type I Format Type Descriptor
+============================================================
+bLength: 6
+Offset  Size  Field              Value    Description
+0       1     bLength             Number   Size of this descriptor, in bytes: 6
+1       1     bDescriptorType     Constant CS_INTERFACE descriptor type
+2       1     bDescriptorSubtype  Constant FORMAT_TYPE descriptor subtype
+3       1     bFormatType         Constant FORMAT_TYPE_I
+4       1     bSubslotSize        Number   Bytes per audio subslot (1, 2, 3, or 4)
+5       1     bBitResolution      Number   Effective bits used from audio subslot (<= bSubslotSize*8)
+
+============================================================
+TABLE 2-6 (Frmts20): Extended Type I Format Type Descriptor
+============================================================
+bLength: 8
+Offset  Size  Field              Value    Description
+0       1     bLength             Number   Size of this descriptor, in bytes: 8
+1       1     bDescriptorType     Constant CS_INTERFACE descriptor type
+2       1     bDescriptorSubtype  Constant FORMAT_TYPE descriptor subtype
+3       1     bFormatType         Constant FORMAT_TYPE_I
+4       1     bSubslotSize        Number   Bytes per audio subslot
+5       1     bBitResolution      Number   Effective bits used from audio subslot
+6       1     bHeaderLength       Number   Size of the Packet Header, in bytes
+7       1     bControlSize        Number   Size of the Control Channel words, in bytes
+
+============================================================
+TABLE 4-28: Encoder Descriptor
+============================================================
+bLength: 21
+Offset  Size  Field              Value    Description
+0       1     bLength             Number   Size of this descriptor, in bytes: 21
+1       1     bDescriptorType     Constant CS_INTERFACE descriptor type
+2       1     bDescriptorSubtype  Constant ENCODER descriptor subtype
+3       1     bEncoderID          Constant Unique encoder ID within the AS interface
+4       1     bEncoder            Constant Encoder type
+5..7    3     (pad)               —        (3 bytes pad to align bmControls to offset 8)
+8       4     bmControls          Bitmap   D1..0: Bit Rate; D3..2: Quality; D5..4: VBR; D7..6: Type;
+                                           D9..8: Underflow; D11..10: Overflow; D13..12: Encoder Error;
+                                           D15..14: Param1; D17..16: Param2; D19..18: Param3;
+                                           D21..20: Param4; D23..22: Param5; D25..24: Param6;
+                                           D27..26: Param7; D29..28: Param8; D31..30: Reserved
+12      1     iParam1             Index    Index of string descriptor for Param1
+13      1     iParam2             Index    Index of string descriptor for Param2
+14      1     iParam3             Index    Index of string descriptor for Param3
+15      1     iParam4             Index    Index of string descriptor for Param4
+16      1     iParam5             Index    Index of string descriptor for Param5
+17      1     iParam6             Index    Index of string descriptor for Param6
+18      1     iParam7             Index    Index of string descriptor for Param7
+19      1     iParam8             Index    Index of string descriptor for Param8
+20      1     iEncoder            Index    Index of string descriptor for this encoder
+
+============================================================
+TABLE 4-29: MPEG Decoder Descriptor
+============================================================
+bLength: 10
+Offset  Size  Field              Value    Description
+0       1     bLength             Number   Size of this descriptor, in bytes: 10
+1       1     bDescriptorType     Constant CS_INTERFACE descriptor type
+2       1     bDescriptorSubtype  Constant DECODER descriptor subtype
+3       1     bDecoderID          Constant Unique decoder ID within the AS interface
+4       1     bDecoder            Constant MPEG_DECODER
+5       2     bmMPEGCapabilities  Bitmap   D2..0: Layer (I,II,III); D3: MPEG-1 only; D4: MPEG-1 dual-ch;
+                                           D5: MPEG-2 2nd stereo; D6: MPEG-2 7.1ch; D7: Adaptive MC prediction;
+                                           D9..8: Multilingual (00=No,01=AtFs,11=AtFs&½Fs); D10: ½Fs; D15..11: Reserved
+7       1     bmMPEGFeatures      Bitmap   D5..4: Internal DRC (00=No,01=NotScalable,10=CommonScale,11=SeparateScale); D3..0,D7..6: Reserved
+8       1     bmControls          Bitmap   D1..0: Underflow; D3..2: Overflow; D5..4: Decoder Error; D7..6: Reserved
+9       1     iDecoder            Index    Index of string descriptor
+
+============================================================
+TABLE 4-30: AC-3 Decoder Descriptor
+============================================================
+bLength: 12
+Offset  Size  Field              Value    Description
+0       1     bLength             Number   Size of this descriptor, in bytes: 12
+1       1     bDescriptorType     Constant CS_INTERFACE descriptor type
+2       1     bDescriptorSubtype  Constant DECODER descriptor subtype
+3       1     bDecoderID          Constant Unique decoder ID within the AS interface
+4       1     bDecoder            Constant AC-3_DECODER
+5       4     bmBSID              Bitmap   Bit Stream ID modes supported (bits 0..31);
+                                           Standard AC-3 must support at least BSID 0..8
+9       1     bmAC3Features       Bitmap   D0: RF mode; D1: Line mode; D2: Custom0; D3: Custom1;
+                                           D5..4: Internal DRC (00=No,01=NotScalable,10=CommonScale,11=SeparateScale); D7..6: Reserved
+10      1     bmControls          Bitmap   D1..0: Underflow; D3..2: Overflow; D5..4: Decoder Error; D7..6: Reserved
+11      1     iDecoder            Index    Index of string descriptor
+
+============================================================
+TABLE 4-31: WMA Decoder Descriptor
+============================================================
+bLength: 9
+Offset  Size  Field              Value    Description
+0       1     bLength             Number   Size of this descriptor, in bytes: 9
+1       1     bDescriptorType     Constant CS_INTERFACE descriptor type
+2       1     bDescriptorSubtype  Constant DECODER descriptor subtype
+3       1     bDecoderID          Constant Unique decoder ID within the AS interface
+4       1     bDecoder            Constant WMA_DECODER
+5       2     bmWMAProfile        Bitmap   D0: WMA L1; D1: WMA L2; D2: WMA L3; D3: WMA L;
+                                           D4: WMA Speech S1; D5: WMA Speech S2;
+                                           D6: WMAPro M1; D7: WMAPro M2; D8: WMAPro M3; D9: WMAPro M;
+                                           D10: WMA Lossless; D15..11: Reserved
+7       1     bmControls          Bitmap   D1..0: Underflow; D3..2: Overflow; D5..4: Decoder Error; D7..6: Reserved
+8       1     iDecoder            Index    Index of string descriptor
+
+============================================================
+TABLE 4-32: DTS Decoder Descriptor
+============================================================
+bLength: 8
+Offset  Size  Field              Value    Description
+0       1     bLength             Number   Size of this descriptor, in bytes: 8
+1       1     bDescriptorType     Constant CS_INTERFACE descriptor type
+2       1     bDescriptorSubtype  Constant DECODER descriptor subtype
+3       1     bDecoderID          Constant Unique decoder ID within the AS interface
+4       1     bDecoder            Constant DTS_DECODER
+5       1     bmCapabilities      Bitmap   D0: Core; D1: Lossless; D2: LBR; D3: MultipleStreamMixing; D4: DualDecode; D7..5: Reserved
+6       1     bmControls          Bitmap   D1..0: Reserved (0b00); D3..2: Underflow; D5..4: Overflow; D7..6: Decoder Error
+7       1     iDecoder            Index    Index of string descriptor
+
+============================================================
+TABLE 4-33: Standard AS Isochronous Audio Data Endpoint Descriptor
+============================================================
+bLength: 7
+Offset  Size  Field              Value    Description
+0       1     bLength             Number   Size of this descriptor, in bytes: 7
+1       1     bDescriptorType     Constant ENDPOINT descriptor type
+2       1     bEndpointAddress    Endpoint D3..0: Endpoint num; D6..4: Reserved; D7: Dir (0=OUT,1=IN)
+3       1     bmAttributes        Bitmap   D1..0: Transfer Type (01=Isoch); D3..2: Sync Type (01=Async,10=Adaptive,11=Sync);
+                                           D5..4: Usage Type (00=Data,10=ImplicitFeedback); All other bits reserved
+4       2     wMaxPacketSize      Number   Max packet size (determined by audio bandwidth)
+6       1     bInterval           Number   Polling interval
+
+============================================================
+TABLE 4-34: Class-Specific AS Isochronous Audio Data Endpoint Descriptor
+============================================================
+bLength: 8
+Offset  Size  Field              Value    Description
+0       1     bLength             Number   Size of this descriptor, in bytes: 8
+1       1     bDescriptorType     Constant CS_ENDPOINT descriptor type
+2       1     bDescriptorSubtype  Constant EP_GENERAL descriptor subtype
+3       1     bmAttributes        Bitmap   D7: MaxPacketsOnly (only for Type II); D6..0: Reserved
+4       1     bmControls          Bitmap   D1..0: Pitch; D3..2: Data Overrun; D5..4: Data Underrun; D7..6: Reserved
+5       1     bLockDelayUnits     Number   0=Undefined, 1=Milliseconds, 2=Decoded PCM samples, 3..255: Reserved
+6       2     wLockDelay          Number   Time to lock internal clock recovery (0 for async endpoints)
+
+============================================================
+TABLE 4-35: Standard AS Isochronous Feedback Endpoint Descriptor
+============================================================
+bLength: 7
+Offset  Size  Field              Value    Description
+0       1     bLength             Number   Size of this descriptor, in bytes: 7
+1       1     bDescriptorType     Constant ENDPOINT descriptor type
+2       1     bEndpointAddress    Endpoint D3..0: Endpoint num; D6..4: Reserved; D7: Dir
+3       1     bmAttributes        Bitmap   D1..0: Transfer Type (01=Isoch); D3..2: Sync Type (00=NoSync);
+                                           D5..4: Usage Type (01=Feedback); All other bits reserved
+4       2     wMaxPacketSize      Number   Max packet size
+6       1     bInterval           Number   Polling interval
+
+================================================================================
+NOT IN THIS DOCUMENT:
+- MIDI IN/OUT Jack descriptors → separate "USB MIDI Devices" document
+- MIDI Bulk Endpoint descriptors → separate "USB MIDI Devices" document
+- Type II/III/IV Format Type descriptors → Frmts20.pdf Tables 2-3, 2-4, 2-5
+
+================================================================================
+ADDITIONAL NOTES:
+- All Unit/Terminal/Clock IDs must be unique across the audio function (0x00 reserved)
+- bmControls always uses 2-bit pairs: 00=absent, 01=read-only, 10=invalid, 11=Host programmable
+- Enable Control on Extension Units is MANDATORY and defaults to OFF
+- Channel cluster: if bNrChannels > bits set in bmChannelConfig, extra channels
+  have non-predefined spatial positions via iChannelNames
+- D31 (Raw Data) in bmChannelConfig is mutually exclusive with all other spatial locations
+- bControlSize for Feature Unit must accommodate 4-byte bmaControls entries
